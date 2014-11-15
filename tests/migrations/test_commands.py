@@ -140,6 +140,24 @@ class MigrateTests(MigrationTestBase):
         call_command("migrate", "migrated_unapplied_app", stdout=stdout)
 
 
+    @override_system_checks([])
+    @override_settings(
+        AUTH_USER_MODEL='custom_user_app.MyUser',
+        INSTALLED_APPS=[
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+            "migrations.migrations_test_apps.custom_user_app",
+            ])
+    def test_migrate_list(self):
+        """
+        Makes sure that makemigrations does not create a merge for an
+        unspecified app even if it has conflicting migrations.
+        """
+        stdout = six.StringIO()
+        with self.assertRaises(ValueError):
+            call_command("migrate", list=True, stdout=stdout)
+
+
 class MakeMigrationsTests(MigrationTestBase):
     """
     Tests running the makemigrations command.
